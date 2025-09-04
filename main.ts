@@ -2,6 +2,8 @@ import { SceneSetup } from './src/utils/SceneSetup.js';
 import { RotationControls } from './src/utils/RotationControls.js';
 import { cubeWithTexture, createThreeJSMesh } from './src/api/CubeAPI.js';
 import { drawHouseStructure } from './house.js';
+import './external_bathroom.js'
+import './outdoor.js'
 
 class GeometryVisualization {
   private sceneSetup: SceneSetup;

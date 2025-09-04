@@ -43,9 +43,9 @@ export class SceneSetup {
       5000
     );
     
-    // Position camera rotated 180 degrees + 10 degrees to the right
-    const angle = Math.PI - Math.PI / 18; // 180 degrees - 10 degrees
-    const distance = 60;
+    // Position camera rotated 10 degrees to the right
+    const angle = -Math.PI / 18; // -10 degrees (right turn)
+    const distance = 100;
     const x = 22 + Math.sin(angle) * distance;
     const z = Math.cos(angle) * distance;
     

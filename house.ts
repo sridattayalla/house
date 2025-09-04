@@ -285,6 +285,9 @@ eastStep.positionAt(leftWall, -3, -2, 24.25)
 const eastUpperStep = wall(1.5, 1, 5)
 eastUpperStep.positionAt(leftWall, -1.5, -1, 24.25)
 const rightWall = cubeWithTexture(1, config.internalWallHeight, 44, 'white painted wall');
+rightWall.makeHole(0, 1.7, 10, 1, 5, 4);           // Window
+eastWindow(4, 5).positionAt(rightWall, 0, 1.7, 10)
+eastWindowFrame(4, 5, 1).positionAt(rightWall, 1, 1.7, 10)
 
 const backWall = cubeWithTexture(33, 11, 1, 'white painted wall');
 backWall.makeHole(6.25, 0, 0, 3.5, 6.7, 1);       // Back door opening
@@ -360,7 +363,19 @@ function groundFloorSlab() {
 function firstFloor(gfSlab: any) {
   // First floor walls
   const backWall = wall(33, config.internalWallHeight, 1);
+  backWall.makeHole(21, 1.7, 0, 4, 5, 1) // window
+  northWindow(4, 5).positionAt(backWall, 21, 1.7, 0)
+  windowFrame(4, 5, 1).positionAt(backWall, 21, 1.7, -0.8)
+  // bathroom ventilation
+  backWall.makeHole(17, 5.2, 0, 2, 1.5, 1)
+  northWindow(2, 1.5).positionAt(backWall, 17, 5.2, 0)
+  windowFrame(2, 1.5, 1).positionAt(backWall, 17, 5.2, -0.8)
   backWall.positionAt(gfSlab, 0, 0, 0);
+
+  // second room bathroom ventilation
+  backWall.makeHole(13, 5.2, 0, 2, 1.5, 1)
+  northWindow(2, 1.5).positionAt(backWall, 13, 5.2, 0)
+  windowFrame(2, 1.5, 1).positionAt(backWall, 13, 5.2, -0.8)
 
   const leftWall = wall(1, config.internalWallHeight, 31);
   leftWall.positionAt(backWall, 0, 0, 0);
@@ -373,6 +388,10 @@ function firstFloor(gfSlab: any) {
 
   const rightWall = wall(1, config.internalWallHeight, 31);
   rightWall.positionAt(backWall, 33 - 1, 0, 0);
+  // rigtwall window
+  rightWall.makeHole(0, 1.7, 10, 1, 5, 4)
+  eastWindow(4, 5).positionAt(rightWall, 0, 1.7, 10)
+  eastWindowFrame(4, 5, 1).positionAt(rightWall, 1, 1.7, 10)
 
   const frontWall = wall(33, config.internalWallHeight, 1);
   frontWall.positionAt(backWall, 0, 0, 33 - 2);
@@ -532,9 +551,13 @@ road.positionAt(northCompundWall, 0, 0, 1)
 leftWall.positionAt(basement, 0, 2, 0);
 rightWall.positionAt(basement, 33 - 1, 2, 0);
 backWall.positionAt(basement, 0, 2, 0);
-backWall.makeHole(16, 1.7, 0, 4, 5, 1)
-northWindow(4, 5).positionAt(backWall, 16, 1.7, 0)
-windowFrame(4, 5, 1).positionAt(backWall, 16, 1.7, -0.8)
+backWall.makeHole(21, 1.7, 0, 4, 5, 1)
+northWindow(4, 5).positionAt(backWall, 21, 1.7, 0)
+windowFrame(4, 5, 1).positionAt(backWall, 21, 1.7, -0.8)
+// bath room ventilation
+backWall.makeHole(17, 5.2, 0, 2, 1.5, 1)
+northWindow(2, 1.5).positionAt(backWall, 17, 5.2, 0)
+windowFrame(2, 1.5, 1).positionAt(backWall, 17, 5.2, -0.8)
 
 // Position pavements
 driveway.positionAt(basement, -6.5, 0, 44);
@@ -570,4 +593,4 @@ export function drawHouseStructure(scene: THREE.Scene): THREE.Group {
   return houseGroup;
 }
 
-export { basement, leftWall, rightWall, backWall, driveway };
+export { basement, leftWall, rightWall, backWall, driveway, wall};
