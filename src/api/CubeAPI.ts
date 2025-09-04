@@ -1,4 +1,37 @@
 import * as THREE from 'three';
+import { CSG } from 'three-csg-ts';
+import { TextureLibrary } from '../utils/ProceduralTextures.js';
+
+// Texture cache to avoid loading the same texture multiple times
+const textureCache = new Map<string, THREE.Texture>();
+const textureLoader = new THREE.TextureLoader();
+
+function loadExternalTexture(texturePath: string, repeat: [number, number] = [1, 1]): THREE.Texture {
+  if (textureCache.has(texturePath)) {
+    return textureCache.get(texturePath)!;
+  }
+  
+  const texture = textureLoader.load(
+    texturePath,
+    // onLoad
+    (texture) => {
+      console.log('Texture loaded successfully:', texturePath);
+    },
+    // onProgress
+    undefined,
+    // onError
+    (error) => {
+      console.error('Failed to load texture:', texturePath, error);
+    }
+  );
+  
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  texture.repeat.set(repeat[0], repeat[1]);
+  
+  textureCache.set(texturePath, texture);
+  return texture;
+}
 
 interface Hole {
   x: number;
@@ -133,19 +166,15 @@ export class Cube {
     return this;
   }
 
-  makeHole(atX: number, atY: number, length: number, width: number, depth: number): Hole {
-    if (atX < 0 || atY < 0 || atX + length > this.length || atY + width > this.width) {
+  makeHole(atX: number, atY: number, atZ: number, length: number, width: number, depth: number): Hole {
+    if (atX < 0 || atY < 0 || atZ < 0 || atX + length > this.length || atY + width > this.width || atZ + depth > this.height) {
       throw new Error("Hole dimensions exceed cube boundaries");
-    }
-    
-    if (depth > this.height) {
-      throw new Error("Hole depth exceeds cube height");
     }
 
     const hole: Hole = {
       x: atX,
       y: atY,
-      z: 0,
+      z: atZ,
       length: length,
       width: width,
       depth: depth
@@ -154,6 +183,33 @@ export class Cube {
     this.holes.push(hole);
     
     return hole;
+  }
+
+  addGlassToHole(holeIndex: number): Cube {
+    if (holeIndex < 0 || holeIndex >= this.holes.length) {
+      throw new Error("Invalid hole index");
+    }
+    
+    const hole = this.holes[holeIndex];
+    const glassThickness = 0.05;
+    
+    // Create glass pane positioned in the middle of the hole depth
+    const glassCube = new Cube(
+      hole.length, 
+      hole.width, 
+      glassThickness, 
+      'glass'
+    );
+    
+    // Position glass in the center of the hole depth
+    glassCube.positionAt(this, 
+      hole.x, 
+      hole.y, 
+      hole.z + (hole.depth - glassThickness) / 2
+    );
+    
+    this.addChild(glassCube);
+    return this;
   }
 
   addChild(cube: Cube): Cube {
@@ -295,10 +351,9 @@ export function createThreeJSMesh(cube: Cube): THREE.Group {
     mesh.rotation.set(cube.rotationX, cube.rotationY, cube.rotationZ);
     group.add(mesh);
   } else {
-    // Cube with holes - create walls around each hole
-    for (const hole of cube.holes) {
-      createWallsAroundHole(group, cube, hole);
-    }
+    // Cube with holes - use CSG for clean boolean subtraction
+    const meshWithHoles = createCubeWithCSGHoles(cube);
+    group.add(meshWithHoles);
   }
   
   // Add children (existing children system)
@@ -317,6 +372,17 @@ export function createThreeJSMesh(cube: Cube): THREE.Group {
 }
 
 function getTextureMaterial(texture: string): THREE.Material {
+  // Check if it's an external texture path
+  if (texture.startsWith('./textures/') || texture.startsWith('/textures/') || texture.includes('.jpg') || texture.includes('.png')) {
+    try {
+      const diffuseTexture = loadExternalTexture(texture, [2, 2]);
+      return new THREE.MeshLambertMaterial({ map: diffuseTexture });
+    } catch (error) {
+      console.warn('Failed to load external texture:', texture, 'falling back to color');
+      return new THREE.MeshLambertMaterial({ color: 0xFFFFFF });
+    }
+  }
+  
   const colorMap: { [key: string]: number } = {
     'wood': 0x8B4513,
     'metal': 0xC0C0C0,
@@ -325,9 +391,11 @@ function getTextureMaterial(texture: string): THREE.Material {
     'glass': 0x87CEEB,
     'white painted wall': 0xFFFFFF,
     'white iron': 0xE8E8E8,
+    'black iron': 0x2C2C2C,
     'grass': 0x228B22,
     'pavement': 0x708090,
-    'grass pavement': 0x556B2F
+    'grass pavement': 0x556B2F,
+    'concrete': 0xD0D0D0
   };
   
   if (texture === 'grass lines pavement') {
@@ -358,40 +426,91 @@ function getTextureMaterial(texture: string): THREE.Material {
   
   const color = colorMap[texture] || 0x00ff00;
   
+  // Special handling for white painted wall
   if (texture === 'white painted wall') {
-    // Create a subtle painted wall texture
-    const canvas = document.createElement('canvas');
-    canvas.width = 256;
-    canvas.height = 256;
-    const context = canvas.getContext('2d')!;
-    
-    // Base white color
-    context.fillStyle = '#FFFFFF';
-    context.fillRect(0, 0, 256, 256);
-    
-    // Add very subtle texture variations
-    context.globalAlpha = 0.03;
-    for (let i = 0; i < 256; i += 8) {
-      context.fillStyle = '#F8F8F8';
-      context.fillRect(i, 0, 1, 256);
-    }
-    
-    // Add very subtle horizontal texture lines
-    context.globalAlpha = 0.02;
-    for (let j = 0; j < 256; j += 16) {
-      context.fillStyle = '#F9F9F9';
-      context.fillRect(0, j, 256, 1);
-    }
-    
-    const wallTexture = new THREE.CanvasTexture(canvas);
-    wallTexture.wrapS = THREE.RepeatWrapping;
-    wallTexture.wrapT = THREE.RepeatWrapping;
-    wallTexture.repeat.set(2, 2);
-    
-    return new THREE.MeshLambertMaterial({ map: wallTexture });
+    return new THREE.MeshStandardMaterial({
+      color: 0xF8F8F8,        // Slightly off-white for realism
+      roughness: 0.3,         // Smooth but not mirror-like
+      metalness: 0.0,         // Non-metallic
+      envMapIntensity: 0.4,   // Subtle environment reflections
+    });
   }
   
-  return new THREE.MeshLambertMaterial({ color });
+  // Special handling for black iron
+  if (texture === 'black iron') {
+    return new THREE.MeshStandardMaterial({
+      color: 0x1A1A1A,        // Dark charcoal black
+      roughness: 0.4,         // Slightly rough iron surface
+      metalness: 0.8,         // Metallic properties
+      envMapIntensity: 0.6,   // More reflective than painted walls
+    });
+  }
+  
+  // Special handling for glass
+  if (texture === 'glass') {
+    return new THREE.MeshStandardMaterial({
+      color: 0x87CEEB,
+      opacity: 0.3,
+      transparent: true,
+      roughness: 0.1,
+      metalness: 0.0,
+      envMapIntensity: 1.0,
+    });
+  }
+  
+  // Special handling for concrete
+  if (texture === 'concrete') {
+    return new THREE.MeshStandardMaterial({
+      color: 0x808080,        // Gray color similar to stone
+      roughness: 0.8,         // Rough concrete surface
+      metalness: 0.0,         // Non-metallic
+      envMapIntensity: 0.2,   // Minimal reflections
+    });
+  }
+  
+  return new THREE.MeshStandardMaterial({ color });
+}
+
+function createCubeWithCSGHoles(cube: Cube): THREE.Mesh {
+  const material = getTextureMaterial(cube.texture);
+  
+  // Create the main cube geometry at origin
+  const cubeGeometry = new THREE.BoxGeometry(cube.length, cube.width, cube.height);
+  let cubeMesh = new THREE.Mesh(cubeGeometry, material);
+  cubeMesh.updateMatrix();
+  
+  let cubeCSG = CSG.fromMesh(cubeMesh);
+  
+  // Subtract each hole using CSG
+  for (const hole of cube.holes) {
+    // Create hole geometry at correct relative position
+    const holeGeometry = new THREE.BoxGeometry(hole.length, hole.width, hole.depth);
+    const holeMesh = new THREE.Mesh(holeGeometry, material);
+    
+    // Position hole relative to cube origin (center-based)
+    holeMesh.position.set(
+      hole.x - cube.length/2 + hole.length/2,
+      hole.y - cube.width/2 + hole.width/2,
+      hole.z - cube.height/2 + hole.depth/2
+    );
+    holeMesh.updateMatrix();
+    
+    // Convert to CSG and subtract from cube
+    const holeCSG = CSG.fromMesh(holeMesh);
+    cubeCSG = cubeCSG.subtract(holeCSG);
+  }
+  
+  // Convert back to Three.js mesh
+  const resultMesh = CSG.toMesh(cubeCSG, new THREE.Matrix4(), material);
+  
+  // Apply the cube's world position
+  resultMesh.position.set(
+    cube.x + cube.length/2,
+    cube.y + cube.width/2, 
+    cube.z + cube.height/2
+  );
+  
+  return resultMesh;
 }
 
 function createWallsAroundHole(group: THREE.Group, cube: Cube, hole: Hole): void {

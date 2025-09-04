@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 
 export class SceneSetup {
   private scene: THREE.Scene;
@@ -19,7 +20,10 @@ export class SceneSetup {
   }
 
   private initializeRenderer(): void {
-    this.renderer = new THREE.WebGLRenderer({ antialias: true });
+    this.renderer = new THREE.WebGLRenderer({ 
+      antialias: true,
+      precision: 'highp'
+    });
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -39,9 +43,14 @@ export class SceneSetup {
       5000
     );
     
-    // Position camera to view the scene straight on
-    this.camera.position.set(22, 0, 100);
-    this.camera.lookAt(22, 0, 0);
+    // Position camera rotated 180 degrees + 10 degrees to the right
+    const angle = Math.PI - Math.PI / 18; // 180 degrees - 10 degrees
+    const distance = 60;
+    const x = 22 + Math.sin(angle) * distance;
+    const z = Math.cos(angle) * distance;
+    
+    this.camera.position.set(x, 15, z); // Lifted camera up to y=15
+    this.camera.lookAt(22, 35, 0); // Tilt up camera much more by looking at very high point
   }
 
   private initializeLights(): void {
@@ -74,9 +83,17 @@ export class SceneSetup {
   }
 
   private setupEnvironment(): void {
+    // Load HDR environment map
+    const rgbeLoader = new RGBELoader();
+    rgbeLoader.load('./textures/sunny_country_road_4k.hdr', (texture) => {
+      texture.mapping = THREE.EquirectangularReflectionMapping;
+//       this.scene.background = texture;
+      this.scene.environment = texture;
+    });
+    
     // Add subtle fog for atmosphere
     this.scene.fog = new THREE.Fog(0x87CEEB, 200, 300);
-  }
+  }  
 
   addToScene(object: THREE.Object3D): void {
     this.scene.add(object);
