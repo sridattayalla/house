@@ -443,30 +443,48 @@ function firstFloor(gfSlab: any) {
     frontWall.z + 4    // Z position relative to front wall
   );
 
-  //pergola
-  //pillars
-  const pillarXPositions = [1, 12, 24];
-  const pillarZPositions = [1, 6, 12];
-  
-  for (const xPos of pillarXPositions) {
-    for (const zPos of pillarZPositions) {
-      cubeWithTexture(0.3, 8, 0.3, 'black iron').positionAt(frontWall, xPos, 0, zPos);
-    }
-  }
+  // //pergola
+  // //pillars
+  // const pillarXPositions = [1, 12, 24];
+  // const pillarZPositions = [1, 6, 12];
+  // 
+  // for (const xPos of pillarXPositions) {
+  //   for (const zPos of pillarZPositions) {
+  //     cubeWithTexture(0.3, 8, 0.3, 'black iron').positionAt(frontWall, xPos, 0, zPos);
+  //   }
+  // }
 
-  // north south lines
-  for(let i=0; i < 7; i++){
-	cubeWithTexture(0.3, 0.3, 11, 'black iron').positionAt(frontWall, (i*4) || 1, 8, 1)
-  }
-  // east west lines
-  const eastWestZPositions = [1, 4, 8, 12];
+  // // north south lines
+  // for(let i=0; i < 7; i++){
+	// cubeWithTexture(0.3, 0.3, 11, 'black iron').positionAt(frontWall, (i*4) || 1, 8, 1)
+  // }
+  // // east west lines
+  // const eastWestZPositions = [1, 4, 8, 12];
+  // 
+  // for (const zPos of eastWestZPositions) {
+  //   cubeWithTexture(23.3, 0.3, 0.3, 'black iron').positionAt(frontWall, 1, 8, zPos);
+  // }
+  // 
+  // // glass roof panels
+  // cubeWithTexture(23.3, 0.1, 11, 'glass').positionAt(frontWall, 1, 8.1, 1)
+
+  // Inclined shade
+  const shadeSupport1 = cubeWithTexture(0.2, 11, 0.2, 'black iron');
+  shadeSupport1.positionAt(frontWall, 2, 0, 2);
   
-  for (const zPos of eastWestZPositions) {
-    cubeWithTexture(23.3, 0.3, 0.3, 'black iron').positionAt(frontWall, 1, 8, zPos);
-  }
+  const shadeSupport2 = cubeWithTexture(0.2, 11, 0.2, 'black iron');
+  shadeSupport2.positionAt(frontWall, 22, 0, 2);
   
-  // glass roof panels
-  cubeWithTexture(23.3, 0.1, 11, 'glass').positionAt(frontWall, 1, 8.1, 1)
+  const shadeSupport3 = cubeWithTexture(0.2, 9, 0.2, 'black iron');
+  shadeSupport3.positionAt(frontWall, 2, 0, 10);
+  
+  const shadeSupport4 = cubeWithTexture(0.2, 9, 0.2, 'black iron');
+  shadeSupport4.positionAt(frontWall, 22, 0, 10);
+  
+  // Inclined shade panels with cantilever
+  const shadePanel = cubeWithTexture(21, 0.1, 12, 'brownish red clay tiles');
+  shadePanel.positionAt(frontWall, 1.5, 11.4, 1);
+  shadePanel.rotateX(15 * Math.PI / 180); // 15 degree incline with 3ft cantilever extension
 
   
   return { slab, spiralStairs };

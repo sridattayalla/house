@@ -395,7 +395,8 @@ function getTextureMaterial(texture: string): THREE.Material {
     'grass': 0x228B22,
     'pavement': 0x708090,
     'grass pavement': 0x556B2F,
-    'concrete': 0xD0D0D0
+    'concrete': 0xD0D0D0,
+    'brownish red clay tiles': 0xA0522D
   };
   
   if (texture === 'grass lines pavement') {
@@ -465,6 +466,51 @@ function getTextureMaterial(texture: string): THREE.Material {
       roughness: 0.8,         // Rough concrete surface
       metalness: 0.0,         // Non-metallic
       envMapIntensity: 0.2,   // Minimal reflections
+    });
+  }
+  
+  // Special handling for brownish red clay tiles
+  if (texture === 'brownish red clay tiles') {
+    // Create a tiled pattern for clay tiles
+    const canvas = document.createElement('canvas');
+    canvas.width = 256;
+    canvas.height = 256;
+    const context = canvas.getContext('2d')!;
+    
+    // Base clay color
+    context.fillStyle = '#A0522D';
+    context.fillRect(0, 0, 256, 256);
+    
+    // Add tile lines - darker brown for grout
+    context.strokeStyle = '#8B4513';
+    context.lineWidth = 2;
+    
+    // Horizontal lines every 32 pixels (8 tiles)
+    for (let i = 0; i <= 256; i += 48) {
+      context.beginPath();
+      context.moveTo(0, i);
+      context.lineTo(256, i);
+      context.stroke();
+    }
+    
+    // Vertical lines every 32 pixels (8 tiles)
+    for (let i = 0; i <= 256; i += 32) {
+      context.beginPath();
+      context.moveTo(i, 0);
+      context.lineTo(i, 256);
+      context.stroke();
+    }
+    
+    const tileTexture = new THREE.CanvasTexture(canvas);
+    tileTexture.wrapS = THREE.RepeatWrapping;
+    tileTexture.wrapT = THREE.RepeatWrapping;
+    tileTexture.repeat.set(2, 2);
+    
+    return new THREE.MeshStandardMaterial({
+      map: tileTexture,
+      roughness: 0.7,         // Moderate roughness for clay tiles
+      metalness: 0.0,         // Non-metallic
+      envMapIntensity: 0.2,   // Slight reflections for glazed clay
     });
   }
   
