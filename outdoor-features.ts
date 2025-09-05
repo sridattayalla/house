@@ -1,5 +1,5 @@
 import { cubeWithTexture } from './src/api/CubeAPI.js';
-import { wall, eastDoor, eastDoorFrame, eastWindow, eastWindowFrame, northWindow, windowFrame, vertical_bar, x_railing, z_railing } from './components.js';
+import { wall, eastDoor, eastDoorFrame, eastWindow, eastWindowFrame, northWindow, windowFrame, vertical_bar, x_railing, z_railing, wood } from './components.js';
 
 export function createPergola(frontWall: any) {
   // Pergola pillars
@@ -74,15 +74,25 @@ export function westRoom(refWall: any){
 }
 
 export function createFirstFloorRailings(gfSlab: any, frontWall: any) {
-  const first_bar = vertical_bar()
-  first_bar.positionAt(gfSlab, 0.5, 0, 43.5)
-  x_railing(33, true, first_bar)
+  // parapet wall
+  wall(0.5, 2, 11.5).positionAt(frontWall, 0, 0.5, 1)
+  wood(0.5, 0.5, 12).positionAt(frontWall, -.5, 0.5, 1)
+  wall(33, 2, .5).positionAt(frontWall, 0, 0.5, 12.5)
+  wood(34, 0.5, .5).positionAt(frontWall, -0.5, 0.5, 13)
+  wall(0.5, 2, 11.5).positionAt(frontWall, 32.5, 0.5, 1)
+  wood(0.5, 0.5, 12).positionAt(frontWall, 33, 0.5, 1)
+
+  const railing_height = 1;
+  const railing_lift = 2.5;
+  const first_bar = vertical_bar(railing_height)
+  first_bar.positionAt(gfSlab, 0.5, railing_lift, 43.5)
+  x_railing(33, true, first_bar, railing_height)
   
   const first_dummy_bar_east = cubeWithTexture(0, 0, 0, '')
-  first_dummy_bar_east.positionAt(frontWall, 0.5, 0, 0.5)
-  z_railing(12, false, first_dummy_bar_east)
+  first_dummy_bar_east.positionAt(frontWall, 0.5, railing_lift, 0.5)
+  z_railing(12, false, first_dummy_bar_east, railing_height)
   
   const first_dummy_bar_west = cubeWithTexture(0, 0, 0, '')
-  first_dummy_bar_west.positionAt(frontWall, 32.5, 0, 0.5)
-  z_railing(12, false, first_dummy_bar_west)
+  first_dummy_bar_west.positionAt(frontWall, 32.5, railing_lift, 0.5)
+  z_railing(12, false, first_dummy_bar_west, railing_height)
 }

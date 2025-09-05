@@ -1,7 +1,7 @@
 import { cubeWithTexture, createThreeJSMesh } from './src/api/CubeAPI.js';
 import { createSpiralStaircase } from './spiral-stairs.js';
 import { createPergola, createInclinedShade, westRoom, createFirstFloorRailings } from './outdoor-features.js';
-import { wall } from './components.js';
+import { wall, wood } from './components.js';
 import * as THREE from 'three';
 
 // ==================== CONFIGURATION ====================

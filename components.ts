@@ -4,6 +4,10 @@ export function wall(x: number, y: number, z: number) {
   return cubeWithTexture(x, y, z, 'white painted wall');
 }
 
+export function wood(x: number, y: number, z: number) {
+  return cubeWithTexture(x, y, z, 'wood');
+}
+
 export function eastDoor(width: number, height: number){
 	const door_thickness = .25
 	const door = cubeWithTexture(0.25, height, width, 'wood')
@@ -95,19 +99,19 @@ export function windowFrame(width: number, height: number, depth: number) {
 	return outerFrame
 }
 
-export function vertical_bar(){
-	return cubeWithTexture(0.1, 3, 0.1, 'black iron')
+export function vertical_bar(height: number = 3){
+	return cubeWithTexture(0.1, height, 0.1, 'black iron')
 }
 
 export function horizontal_bar(width: number){
 	return cubeWithTexture(width, 0.2, 0.2, 'wood')
 }
 
-export function x_railing(count: number, start_immediately: boolean, ref: any) {
+export function x_railing(count: number, start_immediately: boolean, ref: any, height: number = 3) {
   const bars = [];
   
   for (let i = 0; i < count; i++) {
-    const bar = vertical_bar();
+    const bar = vertical_bar(height);
     
     // Calculate position: start 1ft from edge if not start_immediately, then 1ft spacing
     const offset = start_immediately ? i : (i + 1);
@@ -121,16 +125,16 @@ export function x_railing(count: number, start_immediately: boolean, ref: any) {
   const topBar = horizontal_bar(topBarWidth);
   
   const xPos = start_immediately ? 0.05 : 1.05;
-  topBar.positionAt(ref, xPos, 3, 0.05);
+  topBar.positionAt(ref, xPos, height, 0.05);
   
   return { bars, topBar };
 }
 
-export function z_railing(count: number, start_immediately: boolean, ref: any) {
+export function z_railing(count: number, start_immediately: boolean, ref: any, height: number = 3) {
   const bars = [];
   
   for (let i = 0; i < count; i++) {
-    const bar = vertical_bar();
+    const bar = vertical_bar(height);
     
     // Calculate position: start 1ft from edge if not start_immediately, then 1ft spacing
     const offset = start_immediately ? i : (i + 1);
@@ -144,7 +148,7 @@ export function z_railing(count: number, start_immediately: boolean, ref: any) {
   const topBar = cubeWithTexture(0.2, 0.2, topBarWidth, 'wood')
   
   const zPos = start_immediately ? 0.05 : 1.05;
-  topBar.positionAt(ref, 0.05, 3, zPos);
+  topBar.positionAt(ref, 0.05, height, zPos);
   
   return { bars, topBar };
 }
