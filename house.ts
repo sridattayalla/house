@@ -15,6 +15,42 @@ function wall(x: number, y: number, z: number) {
   return cubeWithTexture(x, y, z, 'white painted wall');
 }
 
+function wood(x: number, y: number, z: number) {
+  return cubeWithTexture(x, y, z, 'wood');
+}
+
+function stone(x: number, y: number, z: number) {
+  return cubeWithTexture(x, y, z, 'stone');
+}
+
+function createPergola(frontWall: any) {
+  //pergola
+  //pillars
+  const pillarXPositions = [20, 31];  // Moved 11ft right: [9+11, 14.5+11, 20+11]
+  const pillarZPositions = [1, 12];
+  
+  for (const xPos of pillarXPositions) {
+    for (const zPos of pillarZPositions) {
+      cubeWithTexture(0.3, 8, 0.3, 'black iron').positionAt(frontWall, xPos, 0, zPos);
+    }
+  }
+
+  // north south lines - reduced count and spacing
+  for(let i=0; i < 5; i++){  // Reduced from 7 to 4 lines
+	const xPos = 20 + (i * 2.75);  // Moved 11ft right: starting at x=20 instead of x=9
+	cubeWithTexture(0.3, 0.3, 11, 'black iron').positionAt(frontWall, xPos, 8, 1)
+  }
+  // east west lines
+  const eastWestZPositions = [1, 4, 8, 12];
+  
+  for (const zPos of eastWestZPositions) {
+    cubeWithTexture(11.25, 0.3, 0.3, 'black iron').positionAt(frontWall, 20, 8, zPos);  // Moved from x=9 to x=20
+  }
+  
+  // glass roof panels
+  cubeWithTexture(11.25, 0.1, 11, 'glass').positionAt(frontWall, 20, 8.1, 1)  // Moved from x=9 to x=20
+}
+
 function windowFrame(width: number, height: number, depth: number) {
 	const frameThickness = 0.15
 	const outerProtusion = 0.25
