@@ -76,7 +76,7 @@ export function westRoom(refWall: any){
 export function createFirstFloorRailings(gfSlab: any, frontWall: any) {
   const first_bar = vertical_bar()
   first_bar.positionAt(gfSlab, 0.5, 0, 43.5)
-  x_railing(14, true, first_bar)
+  x_railing(33, true, first_bar)
   
   const first_dummy_bar_east = cubeWithTexture(0, 0, 0, '')
   first_dummy_bar_east.positionAt(frontWall, 0.5, 0, 0.5)

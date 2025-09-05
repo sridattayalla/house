@@ -406,13 +406,13 @@ function firstFloor(gfSlab: any) {
   const slab = wall(33, 1, 32);
   slab.positionAt(backWall, 0, config.internalWallHeight, 0);
   
-//   // East extension
-//   const eastExtension = wall(3, 0.4, 8);
-//   eastExtension.positionAt(leftWall, -3, 8, 26);
-//   
-//   // North extension
-//   const northExtension = wall(24, 0.4, 3);
-//   northExtension.positionAt(frontWall, -3, 8, 1);
+  // East extension
+  const eastExtension = wall(3, 0.4, 8);
+  eastExtension.positionAt(leftWall, -3, 8, 26);
+  
+  // North extension
+  const northExtension = wall(24, 0.4, 3);
+  northExtension.positionAt(frontWall, -3, 8, 1);
   
   // Create first floor railings
   createFirstFloorRailings(gfSlab, frontWall);
@@ -438,7 +438,7 @@ function firstFloor(gfSlab: any) {
   // Outdoor features
 //   createPergola(frontWall);  // Commented out pergola
 //   createInclinedShade(frontWall);
-	westRoom(frontWall);
+// 	westRoom(frontWall);
 
   
   return { slab, spiralStairs };
