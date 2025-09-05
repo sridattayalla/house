@@ -1,5 +1,7 @@
 import { cubeWithTexture, createThreeJSMesh } from './src/api/CubeAPI.js';
 import { createSpiralStaircase } from './spiral-stairs.js';
+import { createPergola, createInclinedShade, westRoom, createFirstFloorRailings } from './outdoor-features.js';
+import { wall } from './components.js';
 import * as THREE from 'three';
 
 // ==================== CONFIGURATION ====================
@@ -11,9 +13,6 @@ const config = {
 };
 
 // ==================== UTILITY FUNCTIONS ====================
-function wall(x: number, y: number, z: number) {
-  return cubeWithTexture(x, y, z, 'white painted wall');
-}
 
 function windowFrame(width: number, height: number, depth: number) {
 	const frameThickness = 0.15
@@ -415,15 +414,8 @@ function firstFloor(gfSlab: any) {
 //   const northExtension = wall(24, 0.4, 3);
 //   northExtension.positionAt(frontWall, -3, 8, 1);
   
-  const first_bar = vertical_bar()
-  first_bar.positionAt(gfSlab, 0.5, 0, 43.5)
-  x_railing(33, true, first_bar)
-  const first_dummy_bar_east = cubeWithTexture(0, 0, 0, '')
-  first_dummy_bar_east.positionAt(frontWall, 0.5, 0, 0.5)
-  z_railing(12, false, first_dummy_bar_east)
-  const first_dummy_bar_west = cubeWithTexture(0, 0, 0, '')
-  first_dummy_bar_west.positionAt(frontWall, 32.5, 0, 0.5)
-  z_railing(12, false, first_dummy_bar_west)
+  // Create first floor railings
+  createFirstFloorRailings(gfSlab, frontWall);
   
   // Spiral stairs at west side, north of front wall
   const spiralStairs = createSpiralStaircase({
@@ -443,48 +435,10 @@ function firstFloor(gfSlab: any) {
     frontWall.z + 4    // Z position relative to front wall
   );
 
-  // //pergola
-  // //pillars
-  // const pillarXPositions = [1, 12, 24];
-  // const pillarZPositions = [1, 6, 12];
-  // 
-  // for (const xPos of pillarXPositions) {
-  //   for (const zPos of pillarZPositions) {
-  //     cubeWithTexture(0.3, 8, 0.3, 'black iron').positionAt(frontWall, xPos, 0, zPos);
-  //   }
-  // }
-
-  // // north south lines
-  // for(let i=0; i < 7; i++){
-	// cubeWithTexture(0.3, 0.3, 11, 'black iron').positionAt(frontWall, (i*4) || 1, 8, 1)
-  // }
-  // // east west lines
-  // const eastWestZPositions = [1, 4, 8, 12];
-  // 
-  // for (const zPos of eastWestZPositions) {
-  //   cubeWithTexture(23.3, 0.3, 0.3, 'black iron').positionAt(frontWall, 1, 8, zPos);
-  // }
-  // 
-  // // glass roof panels
-  // cubeWithTexture(23.3, 0.1, 11, 'glass').positionAt(frontWall, 1, 8.1, 1)
-
-  // Inclined shade
-  const shadeSupport1 = cubeWithTexture(0.2, 11, 0.2, 'black iron');
-  shadeSupport1.positionAt(frontWall, 2, 0, 2);
-  
-  const shadeSupport2 = cubeWithTexture(0.2, 11, 0.2, 'black iron');
-  shadeSupport2.positionAt(frontWall, 22, 0, 2);
-  
-  const shadeSupport3 = cubeWithTexture(0.2, 9, 0.2, 'black iron');
-  shadeSupport3.positionAt(frontWall, 2, 0, 10);
-  
-  const shadeSupport4 = cubeWithTexture(0.2, 9, 0.2, 'black iron');
-  shadeSupport4.positionAt(frontWall, 22, 0, 10);
-  
-  // Inclined shade panels with cantilever
-  const shadePanel = cubeWithTexture(21, 0.1, 12, 'brownish red clay tiles');
-  shadePanel.positionAt(frontWall, 1.5, 11.4, 1);
-  shadePanel.rotateX(15 * Math.PI / 180); // 15 degree incline with 3ft cantilever extension
+  // Outdoor features
+//   createPergola(frontWall);  // Commented out pergola
+//   createInclinedShade(frontWall);
+	westRoom(frontWall);
 
   
   return { slab, spiralStairs };
