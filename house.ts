@@ -325,10 +325,10 @@ function sitout() {
   eastDrop.positionAt(frontWall, 0, config.internalWallHeight-2, -1)
   const northDrop = wall(13, 2, 1);
   northDrop.positionAt(frontWall, 0, config.internalWallHeight-2, 11)
-  const eastExtension = wall(2, 0.4, 14.5);
-  eastExtension.positionAt(eastDrop, -2, .5, 0)
-  const northExtension = wall(14.5, 0.4, 2);
-  northExtension.positionAt(northDrop, -2, 0.5, 1)
+  const eastExtension = wall(3, 0.4, 21.5);
+  eastExtension.positionAt(eastDrop, -3, .5, -7)
+  const northExtension = wall(14.5, 0.4, 3);
+  northExtension.positionAt(northDrop, -3, 0.5, 1)
   const step = wall(7.5, 1, 1.5)
   step.positionAt(basement, 5.15, 0, 44)
   const pillar = wall(1.5, config.internalWallHeight, 1.5)
@@ -395,25 +395,25 @@ function firstFloor(gfSlab: any) {
 
   const frontWall = wall(33, config.internalWallHeight, 1);
   frontWall.positionAt(backWall, 0, 0, 33 - 2);
-  frontWall.makeHole(14.5, 0, 0, 4, 6.7, 1);       // Door opening
-  northDoor(4, 6.7).positionAt(frontWall, 14.5, 0, 0.5)
-  doorFrame(4, 6.7, 0.3).positionAt(frontWall, 14.5, 0, 1)
-  frontWall.makeHole(6, 1.7, 0, 4, 5, 1);          // Window
-  northWindow(2, 5).positionAt(frontWall, 6, 1.7, 0)
-  northWindow(2, 5).positionAt(frontWall, 8, 1.7, 0)
+  frontWall.makeHole(6, 0, 0, 4, 6.7, 1);       // Door opening
+  northDoor(4, 6.7).positionAt(frontWall, 6, 0, 0.5)
+  doorFrame(4, 6.7, 0.3).positionAt(frontWall, 6, 0, 1)
+  frontWall.makeHole(14.5, 1.7, 0, 4, 5, 1);          // Window
+  northWindow(2, 5).positionAt(frontWall, 14.5, 1.7, 0)
+  northWindow(2, 5).positionAt(frontWall, 16.5, 1.7, 0)
 
 
   // First floor slab (roof)
   const slab = wall(33, 1, 32);
   slab.positionAt(backWall, 0, config.internalWallHeight, 0);
   
-  // East extension
-  const eastExtension = wall(2, 0.4, 8);
-  eastExtension.positionAt(leftWall, -2, 8, 26);
-  
-  // North extension
-  const northExtension = wall(24, 0.4, 2);
-  northExtension.positionAt(frontWall, -2, 8, 1);
+//   // East extension
+//   const eastExtension = wall(3, 0.4, 8);
+//   eastExtension.positionAt(leftWall, -3, 8, 26);
+//   
+//   // North extension
+//   const northExtension = wall(24, 0.4, 3);
+//   northExtension.positionAt(frontWall, -3, 8, 1);
   
   const first_bar = vertical_bar()
   first_bar.positionAt(gfSlab, 0.5, 0, 43.5)
@@ -442,6 +442,32 @@ function firstFloor(gfSlab: any) {
     frontWall.y + 1,   // Y position (height)
     frontWall.z + 4    // Z position relative to front wall
   );
+
+  //pergola
+  //pillars
+  const pillarXPositions = [1, 12, 24];
+  const pillarZPositions = [1, 6, 12];
+  
+  for (const xPos of pillarXPositions) {
+    for (const zPos of pillarZPositions) {
+      cubeWithTexture(0.3, 8, 0.3, 'black iron').positionAt(frontWall, xPos, 0, zPos);
+    }
+  }
+
+  // north south lines
+  for(let i=0; i < 7; i++){
+	cubeWithTexture(0.3, 0.3, 11, 'black iron').positionAt(frontWall, (i*4) || 1, 8, 1)
+  }
+  // east west lines
+  const eastWestZPositions = [1, 4, 8, 12];
+  
+  for (const zPos of eastWestZPositions) {
+    cubeWithTexture(23.3, 0.3, 0.3, 'black iron').positionAt(frontWall, 1, 8, zPos);
+  }
+  
+  // glass roof panels
+  cubeWithTexture(23.3, 0.1, 11, 'glass').positionAt(frontWall, 1, 8.1, 1)
+
   
   return { slab, spiralStairs };
 }
