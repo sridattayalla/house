@@ -107,47 +107,47 @@ export function horizontal_bar(width: number){
 	return cubeWithTexture(width, 0.2, 0.2, 'wood')
 }
 
-export function x_railing(count: number, start_immediately: boolean, ref: any, height: number = 3) {
+export function x_railing(count: number, start_immediately: boolean, ref: any, height: number = 3, spacing: number = 1) {
   const bars = [];
   
   for (let i = 0; i < count; i++) {
     const bar = vertical_bar(height);
     
-    // Calculate position: start 1ft from edge if not start_immediately, then 1ft spacing
-    const offset = start_immediately ? i : (i + 1);
+    // Calculate position: start spacing from edge if not start_immediately, then spacing interval
+    const offset = start_immediately ? i * spacing : (i + 1) * spacing;
     bar.positionAt(ref, offset, 0, 0);
     
     bars.push(bar);
   }
   
   // Add horizontal top bar spanning from first to last bar
-  const topBarWidth = count - 1;
+  const topBarWidth = (count - 1) * spacing;
   const topBar = horizontal_bar(topBarWidth);
   
-  const xPos = start_immediately ? 0.05 : 1.05;
+  const xPos = start_immediately ? 0.05 : spacing + 0.05;
   topBar.positionAt(ref, xPos, height, 0.05);
   
   return { bars, topBar };
 }
 
-export function z_railing(count: number, start_immediately: boolean, ref: any, height: number = 3) {
+export function z_railing(count: number, start_immediately: boolean, ref: any, height: number = 3, spacing: number = 1) {
   const bars = [];
   
   for (let i = 0; i < count; i++) {
     const bar = vertical_bar(height);
     
-    // Calculate position: start 1ft from edge if not start_immediately, then 1ft spacing
-    const offset = start_immediately ? i : (i + 1);
+    // Calculate position: start spacing from edge if not start_immediately, then spacing interval
+    const offset = start_immediately ? i * spacing : (i + 1) * spacing;
     bar.positionAt(ref, 0, 0, offset);
     
     bars.push(bar);
   }
   
   // Add horizontal top bar spanning from first to last bar
-  const topBarWidth = count - 1;
+  const topBarWidth = (count - 1) * spacing;
   const topBar = cubeWithTexture(0.2, 0.2, topBarWidth, 'wood')
   
-  const zPos = start_immediately ? 0.05 : 1.05;
+  const zPos = start_immediately ? 0.05 : spacing + 0.05;
   topBar.positionAt(ref, 0.05, height, zPos);
   
   return { bars, topBar };

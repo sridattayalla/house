@@ -1,6 +1,6 @@
 import { cubeWithTexture, createThreeJSMesh } from './src/api/CubeAPI.js';
 import { createSpiralStaircase } from './spiral-stairs.js';
-import { createPergola, createInclinedShade, westRoom, createFirstFloorRailings } from './outdoor-features.js';
+import { createPergola, createInclinedShade, westRoom, createFirstFloorRailings, fgfrontPlantPot } from './outdoor-features.js';
 import { wall, wood } from './components.js';
 import * as THREE from 'three';
 
@@ -301,15 +301,18 @@ backUpperStep.positionAt(backWall, 5.5, -1, -1.5)
 function drawingRoom() {
   const frontWall = wall(20, 11, 1);
   frontWall.positionAt(rightWall, -20, 0, config.buildingLength - config.wallThickness);
-  frontWall.makeHole(3, 1.7, 0, 2, 5, 1);          // Window 1
-  northWindow(2, 5).positionAt(frontWall, 3, 1.7, 0.5)
-  windowFrame(2, 5, 1).positionAt(frontWall, 3, 1.7, 0.8)
-  frontWall.makeHole(15, 1.7, 0, 2, 5, 1);         // Window 2
-  northWindow(2, 5).positionAt(frontWall, 15, 1.7, 0.5)
-  windowFrame(2, 5, 1).positionAt(frontWall, 15, 1.7, 0.8)
+  frontWall.makeHole(3, 0.7, 0, 2, 6, 1);          // Window 1
+  northWindow(2, 6).positionAt(frontWall, 3, 0.7, 0.5)
+  windowFrame(2, 6, 1).positionAt(frontWall, 3, .7, 0.8)
+  frontWall.makeHole(15, .7, 0, 2, 6, 1);         // Window 2
+  northWindow(2, 6).positionAt(frontWall, 15, 0.7, 0.5)
+  windowFrame(2, 6, 1).positionAt(frontWall, 15, 0.7, 0.8)
 
   const eastWall = cubeWithTexture(1, 11, 12.5, 'white painted wall');
   eastWall.positionAt(frontWall, 0, 0, -12.5);
+
+  //font plantation
+  fgfrontPlantPot(frontWall)
 }
 
 function sitout() {
@@ -318,8 +321,8 @@ function sitout() {
   frontWall.makeHole(6, 0, 0, 4, 6.7, 1);          // Door opening
   northDoor(4, 6.7).positionAt(frontWall, 6, 0, 0.5)
   doorFrame(4, 6.7, 0.3).positionAt(frontWall, 6, 0, 1)
-  frontWall.makeHole(2, 1.7, 0, 3, 5, 1);          // Window
-  northWindow(3, 5).positionAt(frontWall, 2, 1.7, 0)
+  frontWall.makeHole(2, .7, 0, 3, 6, 1);          // Window
+  northWindow(3, 6).positionAt(frontWall, 2, .7, 0)
   const eastDrop = wall(1, 2, 13);
   eastDrop.positionAt(frontWall, 0, config.internalWallHeight-2, -1)
   const northDrop = wall(13, 2, 1);
@@ -344,6 +347,7 @@ function sitout() {
   // east sitting parapet wall
   const eastWall = wall(0.5, 3, 6.5)
   eastWall.positionAt(frontWall, 0, 0, 1)
+//   eastWall.makeHole(0, 0, 0.5, 0.5, 2.5, 5.5)
   const seatingSlab = cubeWithTexture(2, 0.3, 6.5, 'stone');
   seatingSlab.positionAt(eastWall, -1+0.15, 3, 0)
   
@@ -416,7 +420,7 @@ function firstFloor(gfSlab: any) {
   
   // Create first floor railings
   createFirstFloorRailings(gfSlab, frontWall);
-  
+ 
   // Spiral stairs at west side, north of front wall
   const spiralStairs = createSpiralStaircase({
     totalHeight: config.internalWallHeight,
@@ -441,6 +445,8 @@ function firstFloor(gfSlab: any) {
 // 	westRoom(frontWall);
 
   
+//   wood(0.5, 0.5, 12).positionAt(frontWall, -.5, 10.5, -11)
+//   wood(33.5, 0.5, .5).positionAt(frontWall, -.5, 10.5, 1)
   return { slab, spiralStairs };
 }
 

@@ -513,6 +513,16 @@ function getTextureMaterial(texture: string): THREE.Material {
       envMapIntensity: 0.2,   // Slight reflections for glazed clay
     });
   }
+
+  if(texture === 'ground clay'){
+	return new THREE.MeshStandardMaterial({
+		map: textureLoader.load('textures/redmud/red_mud_stones_diff_4k.jpg'),
+		normalMap: textureLoader.load('textures/redmud/red_mud_stones_nor_gl_4k.jpg'),
+		roughnessMap: textureLoader.load('textures/redmud/red_mud_stones_rough_4k.jpg'),
+		roughness: 0.8,
+		metalness: 0.1
+	});
+  }
   
   return new THREE.MeshStandardMaterial({ color });
 }

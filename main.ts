@@ -11,6 +11,7 @@ class GeometryVisualization {
 
   constructor() {
     this.sceneSetup = new SceneSetup();
+	window.scene = this.sceneSetup.getScene();
     this.rotationControls = new RotationControls(
       this.sceneSetup.getCamera(),
       this.sceneSetup.getRenderer()
