@@ -345,10 +345,10 @@ function sitout() {
   inclined_railing_invisible_right.positionAt(pillar, 12.1, 0, 0.75)
   inclined_z_railing(4, true, inclined_railing_invisible_right, 30)
   // east sitting parapet wall
-  const eastWall = wall(0.5, 3, 6.5)
+  const eastWall = wall(0.5, 3, 9.5)
   eastWall.positionAt(frontWall, 0, 0, 1)
 //   eastWall.makeHole(0, 0, 0.5, 0.5, 2.5, 5.5)
-  const seatingSlab = cubeWithTexture(2, 0.3, 6.5, 'stone');
+  const seatingSlab = cubeWithTexture(2, 0.3, 9.5, 'stone');
   seatingSlab.positionAt(eastWall, -1+0.15, 3, 0)
   
   // East side step for sitout

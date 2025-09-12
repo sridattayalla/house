@@ -4,9 +4,10 @@ import { TextureLibrary } from '../utils/ProceduralTextures.js';
 
 // Texture cache to avoid loading the same texture multiple times
 const textureCache = new Map<string, THREE.Texture>();
+const materialCache = new Map<string, THREE.Material>();
 const textureLoader = new THREE.TextureLoader();
 
-function loadExternalTexture(texturePath: string, repeat: [number, number] = [1, 1]): THREE.Texture {
+function loadExternalTexture(texturePath: string, repeat: [number, number] = [1, 1], isColorTexture: boolean = true): THREE.Texture {
   if (textureCache.has(texturePath)) {
     return textureCache.get(texturePath)!;
   }
@@ -16,18 +17,50 @@ function loadExternalTexture(texturePath: string, repeat: [number, number] = [1,
     // onLoad
     (texture) => {
       console.log('Texture loaded successfully:', texturePath);
+      
+      // ← KEY FIX: Set correct color space based on texture type
+      if (isColorTexture) {
+        texture.colorSpace = THREE.SRGBColorSpace; // Color textures (diffuse, albedo, AO)
+      } else {
+        texture.colorSpace = THREE.LinearSRGBColorSpace; // Data textures (normal, roughness, metallic)
+      }
+      
+      // Configure texture properly after loading
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+      texture.repeat.set(repeat[0], repeat[1]);
+      texture.flipY = false;
+      texture.minFilter = THREE.LinearMipmapLinearFilter;
+      texture.magFilter = THREE.LinearFilter;
+      texture.generateMipmaps = true;
+      texture.needsUpdate = true;
     },
     // onProgress
-    undefined,
+    (progress) => {
+      if (progress.lengthComputable) {
+        const percentComplete = (progress.loaded / progress.total) * 100;
+        console.log(`Loading ${texturePath}: ${percentComplete.toFixed(2)}%`);
+      }
+    },
     // onError
     (error) => {
       console.error('Failed to load texture:', texturePath, error);
+      console.error('Check if the texture file exists and the path is correct');
     }
   );
   
+  // Set initial properties (will be overridden in onLoad)
   texture.wrapS = THREE.RepeatWrapping;
   texture.wrapT = THREE.RepeatWrapping;
   texture.repeat.set(repeat[0], repeat[1]);
+  texture.flipY = false;
+  
+  // Set initial color space
+  if (isColorTexture) {
+    texture.colorSpace = THREE.SRGBColorSpace;
+  } else {
+    texture.colorSpace = THREE.LinearSRGBColorSpace;
+  }
   
   textureCache.set(texturePath, texture);
   return texture;
@@ -331,25 +364,62 @@ export function cubeWithTexture(length: number, width: number, height: number, t
   return new Cube(length, width, height, texture);
 }
 
+// Generic function for flooring materials with proper UV scaling and top-only application
+export function cubeWithFlooringTexture(length: number, width: number, height: number, flooringType: string): Cube {
+  const cube = new Cube(length, width, height, `flooring:${flooringType}`);
+  // Store dimensions and flooring type for UV calculation
+  (cube as any).flooringData = { length, width, height, flooringType };
+  return cube;
+}
+
+// Convenience functions for specific flooring types
+export function cubeWithGroundClayTexture(length: number, width: number, height: number): Cube {
+  return cubeWithFlooringTexture(length, width, height, 'ground_clay');
+}
+
+export function cubeWithWoodFlooringTexture(length: number, width: number, height: number): Cube {
+  return cubeWithFlooringTexture(length, width, height, 'wood_planks');
+}
+
+export function cubeWithStoneFlooringTexture(length: number, width: number, height: number): Cube {
+  return cubeWithFlooringTexture(length, width, height, 'stone_tiles');
+}
+
+export function cubeWithMarbleFlooringTexture(length: number, width: number, height: number): Cube {
+  return cubeWithFlooringTexture(length, width, height, 'marble_tiles');
+}
+
 export function createThreeJSMesh(cube: Cube): THREE.Group {
   const group = new THREE.Group();
   
   if (cube.holes.length === 0) {
-    // Simple cube without holes
-    const geometry = new THREE.BoxGeometry(cube.length, cube.width, cube.height);
-    geometry.translate(cube.length / 2, cube.width / 2, cube.height / 2);
-    const material = getTextureMaterial(cube.texture);
-    
-    // Adjust texture repeat for grass lines pavement to maintain consistent pattern
-    if (cube.texture === 'grass lines pavement' && material instanceof THREE.MeshLambertMaterial && material.map) {
-      material.map.repeat.set(cube.length / 8, cube.height / 8);
-      material.map.needsUpdate = true;
+    // Special handling for ground clay texture
+    if (cube.texture === 'ground clay') {
+      const mesh = createGroundClayMesh(cube);
+      group.add(mesh);
+    } else if(cube.texture === 'grass'){
+      const mesh = createGrassMesh(cube);
+      group.add(mesh);
+    } else if (cube.texture === 'white painted wall') {
+      const mesh = createWhitePaintedWallMesh(cube);
+      group.add(mesh);
+	} else {
+      // Simple cube without holes
+      const geometry = new THREE.BoxGeometry(cube.length, cube.width, cube.height);
+      geometry.translate(cube.length / 2, cube.width / 2, cube.height / 2);
+      const material = getTextureMaterial(cube.texture);
+      
+      // Adjust texture repeat for grass lines pavement to maintain consistent pattern
+      if (cube.texture === 'grass lines pavement' && material instanceof THREE.MeshLambertMaterial && material.map) {
+        material.map.repeat.set(cube.length / 8, cube.height / 8);
+        material.map.needsUpdate = true;
+      }
+      
+      const mesh = new THREE.Mesh(geometry, material);
+      mesh.position.set(cube.x, cube.y, cube.z);
+      mesh.rotation.set(cube.rotationX, cube.rotationY, cube.rotationZ);
+      group.add(mesh);
     }
-    
-    const mesh = new THREE.Mesh(geometry, material);
-    mesh.position.set(cube.x, cube.y, cube.z);
-    mesh.rotation.set(cube.rotationX, cube.rotationY, cube.rotationZ);
-    group.add(mesh);
   } else {
     // Cube with holes - use CSG for clean boolean subtraction
     const meshWithHoles = createCubeWithCSGHoles(cube);
@@ -418,6 +488,7 @@ function getTextureMaterial(texture: string): THREE.Material {
     }
     
     const texture2D = new THREE.CanvasTexture(canvas);
+    texture2D.colorSpace = THREE.SRGBColorSpace; // ← KEY FIX: Canvas textures need SRGB
     texture2D.wrapS = THREE.RepeatWrapping;
     texture2D.wrapT = THREE.RepeatWrapping;
     texture2D.repeat.set(4, 4);
@@ -429,11 +500,10 @@ function getTextureMaterial(texture: string): THREE.Material {
   
   // Special handling for white painted wall
   if (texture === 'white painted wall') {
-    return new THREE.MeshStandardMaterial({
-      color: 0xF8F8F8,        // Slightly off-white for realism
-      roughness: 0.3,         // Smooth but not mirror-like
-      metalness: 0.0,         // Non-metallic
-      envMapIntensity: 0.4,   // Subtle environment reflections
+    return new THREE.MeshStandardMaterial({ 
+      color: 0xFFFFFF,
+      roughness: 0.8,
+      metalness: 0.0 
     });
   }
   
@@ -502,6 +572,7 @@ function getTextureMaterial(texture: string): THREE.Material {
     }
     
     const tileTexture = new THREE.CanvasTexture(canvas);
+    tileTexture.colorSpace = THREE.SRGBColorSpace; // ← KEY FIX: Canvas textures need SRGB
     tileTexture.wrapS = THREE.RepeatWrapping;
     tileTexture.wrapT = THREE.RepeatWrapping;
     tileTexture.repeat.set(2, 2);
@@ -515,12 +586,52 @@ function getTextureMaterial(texture: string): THREE.Material {
   }
 
   if(texture === 'ground clay'){
+	// Load textures with proper color space handling
+	const diffuseMap = textureLoader.load('textures/brownmud/brown_mud_leaves_01_diff_4k.jpg', 
+		// onLoad
+		(texture) => {
+			texture.colorSpace = THREE.SRGBColorSpace; // ← KEY FIX: Color textures need SRGB
+			texture.wrapS = THREE.RepeatWrapping;
+			texture.wrapT = THREE.RepeatWrapping;
+			texture.repeat.set(2, 2);
+			texture.flipY = false;
+		},
+		undefined,
+		(error) => console.error('Failed to load diffuse texture:', error)
+	);
+	
+	const normalMap = textureLoader.load('textures/brownmud/brown_mud_leaves_01_nor_gl_4k.jpg',
+		(texture) => {
+			texture.colorSpace = THREE.LinearSRGBColorSpace; // Normal maps stay linear
+			texture.wrapS = THREE.RepeatWrapping;
+			texture.wrapT = THREE.RepeatWrapping;
+			texture.repeat.set(2, 2);
+			texture.flipY = false;
+		},
+		undefined,
+		(error) => console.error('Failed to load normal texture:', error)
+	);
+	
+	const roughnessMap = textureLoader.load('textures/brownmud/brown_mud_leaves_01_rough_4k.jpg',
+		(texture) => {
+			texture.colorSpace = THREE.LinearSRGBColorSpace; // Roughness maps stay linear
+			texture.wrapS = THREE.RepeatWrapping;
+			texture.wrapT = THREE.RepeatWrapping;
+			texture.repeat.set(2, 2);
+			texture.flipY = false;
+		},
+		undefined,
+		(error) => console.error('Failed to load roughness texture:', error)
+	);
+
 	return new THREE.MeshStandardMaterial({
-		map: textureLoader.load('textures/redmud/red_mud_stones_diff_4k.jpg'),
-		normalMap: textureLoader.load('textures/redmud/red_mud_stones_nor_gl_4k.jpg'),
-		roughnessMap: textureLoader.load('textures/redmud/red_mud_stones_rough_4k.jpg'),
+		map: diffuseMap,
+		normalMap: normalMap,
+		roughnessMap: roughnessMap,
 		roughness: 0.8,
-		metalness: 0.1
+		metalness: 0.1,
+		normalScale: new THREE.Vector2(1, 1),
+		envMapIntensity: 0.3,
 	});
   }
   
@@ -567,6 +678,118 @@ function createCubeWithCSGHoles(cube: Cube): THREE.Mesh {
   );
   
   return resultMesh;
+}
+
+// Generic function to create flooring mesh with texture only on top face
+export function createFlooringMesh(cube: Cube, diffuseTexturePath: string, textureScale: number = 24, sideColor: number = 0x8B4513): THREE.Mesh {
+  const geometry = new THREE.BoxGeometry(cube.length, cube.width, cube.height);
+  geometry.translate(cube.length / 2, cube.width / 2, cube.height / 2);
+  
+  // Create materials array - flooring texture only on top, simple material for sides/bottom
+  const materials = [];
+  const simpleMaterial = new THREE.MeshStandardMaterial({ color: sideColor });
+  
+  // Calculate texture repeat based on actual dimensions
+  const repeatX = cube.length / textureScale;
+  const repeatZ = cube.height / textureScale;
+  
+  // Create top material with proper texture scaling
+  const diffuseMap = textureLoader.load(diffuseTexturePath, (texture) => {
+    texture.colorSpace = THREE.SRGBColorSpace;
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(repeatX, repeatZ);
+    texture.flipY = false;
+  });
+  
+  const topMaterial = new THREE.MeshStandardMaterial({
+    map: diffuseMap,
+    roughness: 0.8,
+    metalness: 0.1,
+    envMapIntensity: 0.3,
+  });
+  
+  // Box faces order: [+X, -X, +Y, -Y, +Z, -Z] = [right, left, top, bottom, front, back]
+  materials[0] = simpleMaterial; // +X (right)
+  materials[1] = simpleMaterial; // -X (left)  
+  materials[2] = topMaterial;    // +Y (top)
+  materials[3] = simpleMaterial; // -Y (bottom)
+  materials[4] = simpleMaterial; // +Z (front)
+  materials[5] = simpleMaterial; // -Z (back)
+  
+  const mesh = new THREE.Mesh(geometry, materials);
+  mesh.position.set(cube.x, cube.y, cube.z);
+  mesh.rotation.set(cube.rotationX, cube.rotationY, cube.rotationZ);
+  
+  return mesh;
+}
+
+export function createWallMesh(cube: Cube, diffuseTexturePath: string, textureScale: number = 24, sideColor: number = 0x8B4513): THREE.Mesh {
+  const geometry = new THREE.BoxGeometry(cube.length, cube.width, cube.height);
+  geometry.translate(cube.length / 2, cube.width / 2, cube.height / 2);
+  
+  // Create materials array - flooring texture only on top, simple material for sides/bottom
+  const materials = [];
+  const simpleMaterial = new THREE.MeshStandardMaterial({ color: sideColor });
+  
+  // Calculate texture repeat based on actual dimensions
+  const repeatX = cube.length / textureScale;
+  const repeatZ = cube.height / textureScale;
+  
+  // Create top material with proper texture scaling
+  const diffuseMap = textureLoader.load(diffuseTexturePath, (texture) => {
+    texture.colorSpace = THREE.SRGBColorSpace;
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(repeatX, repeatZ);
+    texture.flipY = false;
+  });
+  
+  const topMaterial = new THREE.MeshStandardMaterial({
+    map: diffuseMap,
+    roughness: 0.8,
+    metalness: 0.1,
+    envMapIntensity: 0.3,
+  });
+  
+  // Box faces order: [+X, -X, +Y, -Y, +Z, -Z] = [right, left, top, bottom, front, back]
+  materials[0] = simpleMaterial; // +X (right)
+  materials[1] = simpleMaterial; // -X (left)  
+  materials[2] = topMaterial;    // +Y (top)
+  materials[3] = simpleMaterial; // -Y (bottom)
+  materials[4] = simpleMaterial; // +Z (front)
+  materials[5] = simpleMaterial; // -Z (back)
+  
+  const mesh = new THREE.Mesh(geometry, materials);
+  mesh.position.set(cube.x, cube.y, cube.z);
+  mesh.rotation.set(cube.rotationX, cube.rotationY, cube.rotationZ);
+  
+  return mesh;
+}
+
+function createGroundClayMesh(cube: Cube): THREE.Mesh {
+  return createFlooringMesh(cube, 'textures/brownmud/brown_mud_leaves_01_diff_4k.jpg', 24, 0x8B4513);
+}
+
+function createGrassMesh(cube: Cube): THREE.Mesh {
+  return createFlooringMesh(cube, 'textures/brownmud/brown_mud_leaves_01_diff_4k.jpg', 25, 0x8B4513);
+}
+
+function createWhitePaintedWallMesh(cube: Cube): THREE.Mesh {
+  const geometry = new THREE.BoxGeometry(cube.length, cube.width, cube.height);
+  geometry.translate(cube.length / 2, cube.width / 2, cube.height / 2);
+  
+  const material = new THREE.MeshStandardMaterial({ 
+    color: 0xFFFFFF,
+    roughness: 0.8,
+    metalness: 0.0 
+  });
+  
+  const mesh = new THREE.Mesh(geometry, material);
+  mesh.position.set(cube.x, cube.y, cube.z);
+  mesh.rotation.set(cube.rotationX, cube.rotationY, cube.rotationZ);
+  
+  return mesh;
 }
 
 function createWallsAroundHole(group: THREE.Group, cube: Cube, hole: Hole): void {

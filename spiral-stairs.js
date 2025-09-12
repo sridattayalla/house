@@ -10,8 +10,8 @@ export function createSpiralStaircase(options = {}) {
     stepCount = Math.floor(totalHeight / stepHeight),
     turns = 1, // Number of full rotations
     poleRadius = 0.3,
-    stepMaterial = new THREE.MeshStandardMaterial({ color: 0x444444, metalness: 0.8, roughness: 0.4 }),
-    poleMaterial = new THREE.MeshStandardMaterial({ color: 0x222222, metalness: 0.9, roughness: 0.3 })
+    stepMaterial = new THREE.MeshStandardMaterial({ color: 0xfcfbf4, metalness: 0.3, roughness: 0.4 }),
+    poleMaterial = new THREE.MeshStandardMaterial({ color: 0xfcfbf4, metalness: 0.3, roughness: 0.3 })
   } = options;
 
   const group = new THREE.Group();

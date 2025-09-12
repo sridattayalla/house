@@ -130,4 +130,13 @@ export function fgfrontPlantPot(frontWall: any){
 // 		gltfScene.scene.scale.set(1.5, 1.5, 1.5)
 		window.scene.add(gltfScene.scene)
 	})
+
+	//grass
+// 	gltfLoader.load('./models/simple_grass_chunks.glb', (gltfScene)=>{
+// 		gltfScene.scene.position.z = 45;
+// 		gltfScene.scene.position.x = 33;
+// 		gltfScene.scene.position.y = 2;
+// 		gltfScene.scene.scale.set(10, 10, 10)
+// 		window.scene.add(gltfScene.scene)
+// 	})
 }
