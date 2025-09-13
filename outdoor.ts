@@ -1,18 +1,18 @@
 import { basement } from './house.js';
-import { cubeWithTexture } from './src/api/CubeAPI.js';
+import { createBox, BoxElement } from './src/api/GroupAPI.js';
 
 // ==================== GATE FUNCTIONS ====================
 
-function vertical_gate_bar(){
-	return cubeWithTexture(0.1, 6, 0.1, 'black iron')
+function vertical_gate_bar(): BoxElement {
+	return createBox(0.1, 6, 0.1, 'black iron')
 }
 
-function horizontal_gate_bar(width: number){
-	return cubeWithTexture(width, 0.1, 0.1, 'black iron')
+function horizontal_gate_bar(width: number): BoxElement {
+	return createBox(width, 0.1, 0.1, 'black iron')
 }
 
 export function createIronGate(width: number, height: number) {
-	const gateGroup = cubeWithTexture(0, 0, 0, ''); // Invisible container
+	const gateGroup = createBox(0.1, 0.1, 0.1, 'black iron'); // Container
 	
 	// Calculate number of vertical bars (spaced 0.5 units apart)
 	const barSpacing = 0.5;
@@ -22,16 +22,16 @@ export function createIronGate(width: number, height: number) {
 	for (let i = 0; i < numBars; i++) {
 		const bar = vertical_gate_bar();
 		const xPos = i * barSpacing;
-		bar.positionAt(gateGroup, xPos, 0, 0);
+		gateGroup.addChild(bar, xPos, 0, 0);
 	}
 	
 	// Add top horizontal bar
 	const topBar = horizontal_gate_bar(width);
-	topBar.positionAt(gateGroup, 0, height - 0.1, 0);
+	gateGroup.addChild(topBar, 0, height - 0.1, 0);
 	
 	// Add bottom horizontal bar
 	const bottomBar = horizontal_gate_bar(width);
-	bottomBar.positionAt(gateGroup, 0, 0.1, 0);
+	gateGroup.addChild(bottomBar, 0, 0.1, 0);
 	
 	return gateGroup;
 }
@@ -41,15 +41,15 @@ export function createIronGate(width: number, height: number) {
 export function addCompoundWallGates(northCompoundWall: any) {
 	// Main gate (large opening)
 	const mainGate = createIronGate(8, 6);
-	mainGate.positionAt(northCompoundWall, 18, 0, 0);
+	northCompoundWall.addChild(mainGate, 18, 0, 0);
 	
 	// Pedestrian gate (small opening)
 	const pedestrianGate = createIronGate(3, 6);
-	pedestrianGate.positionAt(northCompoundWall, 12, 0, 0);
+	northCompoundWall.addChild(pedestrianGate, 12, 0, 0);
 }
 
 const mainGate = createIronGate(8, 6);
-mainGate.positionAt(basement, 2.7, 0, 67)
+basement.addChild(mainGate, 2.7, 0, 67)
 
 const pedestrianGate = createIronGate(3, 6);
-pedestrianGate.positionAt(basement, -3.3, 0, 67)
+basement.addChild(pedestrianGate, -3.3, 0, 67)

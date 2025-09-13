@@ -1,6 +1,6 @@
 import { SceneSetup } from './src/utils/SceneSetup.js';
 import { RotationControls } from './src/utils/RotationControls.js';
-import { cubeWithTexture, createThreeJSMesh } from './src/api/CubeAPI.js';
+import { createBox, BoxElement } from './src/api/GroupAPI.js';
 import { drawHouseStructure } from './house.js';
 import './external_bathroom.js'
 import './outdoor.js'
